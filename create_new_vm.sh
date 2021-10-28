@@ -198,11 +198,11 @@ then
   if [[ ${PROVISION_VIRTUAL_HDD} == 'YES' ]]
   then
     echo "Creating Hard Drive (dynamically allocated)..."
-    vboxmanage createhd --filename "/home/leo/virtualbox/HDD_${VM_NAME}_${HDD_SIZE}MB.vdi" --size ${HDD_SIZE} --variant Standard
+    vboxmanage createhd --filename "~/virtualbox/HDD_${VM_NAME}_${HDD_SIZE}MB.vdi" --size ${HDD_SIZE} --variant Standard
     if [[ ${ADD_SATA_CONTROLLER} == 'YES' ]]
     then
       echo "Attach Hard Drive to SATA controller..."
-      vboxmanage storageattach ${VM_NAME} --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium "/home/leo/virtualbox/HDD_${VM_NAME}_${HDD_SIZE}MB.vdi"
+      vboxmanage storageattach ${VM_NAME} --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium "~/virtualbox/HDD_${VM_NAME}_${HDD_SIZE}MB.vdi"
     fi
   fi
 

@@ -3,3 +3,4 @@ Useful scripts to automate deployment of virtual machines with virtual box on a 
 
 Requirements: 
 - virtualbox and extension pack installed on the server
+- ~/virtualbox folder on the home directory
