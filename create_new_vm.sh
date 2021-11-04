@@ -25,7 +25,7 @@ while [[ $# -gt 0 ]]; do
     echo "Command reference:"
     echo
     echo "  -h | --help"
-    echo "  --ostype [ubuntu|redhat|linux]"
+    echo "  --ostype [ubuntu|redhat|linux|debian]"
     echo "  -c  |  --cpus [1|2|3|4]                       --> default = 2 cores"
     echo "  -m  | --memory [<ram size in MB>]             --> default = 1024MB"
     echo "  --vram [<vram size in MB>]                    --> default = 12MB (for headless VMs is fine)"
@@ -33,11 +33,12 @@ while [[ $# -gt 0 ]]; do
     echo "  --virt_HDD [<HDD_size in MiB> | no]           --> create and attach a XXX MiB virtual HDD or not"
     echo "  --IDE                                         --> add IDE controller"
     echo "  --isofile [<.iso location> | no]              --> attach isofile to IDE controller"
+    echo "  --vrdeport [PORT_NUMBER]                      --> enables VRDE at the specified port (check netstat -tupln for free ports before!)"
     echo "  -n  | --name                                  --> VM name"
     echo "  -s  |  --systemd                              --> create systemd daemon to start vm on boot"
     echo "  -d  | --dry-run"
     echo
-    echo "Example (20GB HDD): ./create_new_vm.sh -d --ostype ubuntu -c 2 -m 2048 --SATA --virt_HDD 20480 --IDE --isofile './<ISOFILE_FULLPATH.iso>' --vrdeport 10004 -n '<VM_NAME>' --systemd"
+    echo "Example (20GB HDD): ./create_new_vm.sh -d --ostype ubuntu -c 2 -m 2048 --SATA --virt_HDD 20480 --IDE --isofile './<ISOFILE_FULLPATH.iso>' --vrdeport 1000X -n '<VM_NAME>' --systemd"
     echo
     exit 1
     ;;
@@ -46,6 +47,9 @@ while [[ $# -gt 0 ]]; do
       if [[ $2 == "ubuntu" || $2 == "Ubuntu_64" ]]
       then
         OS_TYPE="Ubuntu_64"
+      elif [[ $2 == "debian" || $2 == "Debian_64" ]]
+      then
+        OS_TYPE="Debian_64"
       elif [[ $2 == "redhat" || $2 == "centos" || $2 == "RedHat_64" ]]
       then
         OS_TYPE="RedHat_64"
@@ -142,7 +146,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 # Parameters check
 if [[ $OS_TYPE == "" ]]
 then
-  echo "ERROR: please provide valid OS Type (ubuntu, redhat or linux)."
+  echo "ERROR: please provide valid OS Type (--ostype ubuntu, redhat, debian or linux)."
   echo "HINT: --help is available"
   exit 1
 elif [[ $VM_NAME == "" ]]
@@ -216,7 +220,7 @@ then
     if [[ ${ATTACH_ISO_FILE} == 'YES' ]]
     then
       echo "Attach ISO file to IDE controller..."
-      vboxmange storageattach ${VM_NAME} --storagectl "IDE Controller" --port 0  --device 0 --type dvddrive --medium ${ISO_LOCATION}
+      vboxmanage storageattach ${VM_NAME} --storagectl "IDE Controller" --port 0  --device 0 --type dvddrive --medium ${ISO_LOCATION}
     fi
   fi
 
