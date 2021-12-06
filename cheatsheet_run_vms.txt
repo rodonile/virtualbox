@@ -1,0 +1,94 @@
+# Useful list commands
+vboxmanage list vms
+vboxmanage list runningvms
+vboxmanage showvminfo <VM_NAME>
+
+############################################
+# CREATE AND CONFIGURE VM
+############################################
+# Create/Register VM (will be created with basefolder in "/home/leo/Virtualbox VMs", change it via )
+vboxmanage list ostypes                                                         # e.g. Ubuntu_64, Linux_64 (other linux 64bit), RedHat_64 (for centOS), Debian_64
+vboxmanage createvm --name <VM_NAME> --ostype Ubuntu_64 --register              
+
+# Allocate HW resources
+vboxmanage modifyvm <VM_NAME> --cpus 2 --memory 4096 --vram 12                  # need little vram to run headless, e.g. 12MB
+vboxmanage modifyvm <VM_NAME> --nic1 bridged --bridgeadapter1 eno1              # bridged mode, will get IP from DHCP (required if want it to be accessible in home network)
+
+# Switch from BIOS to EFI (some OSes require this, e.g. homeassistant)
+vboxmanage modifyvm <VM_NAME> --firmware efi
+
+# Enable nested virtualization if desired
+vboxmanage modifyvm <VM_NAME> --nested-hw-virt on
+
+# Create virtual hard disk if necessary (.vdi file)
+vboxmanage createhd --filename /home/leo/virtualbox/hd_20GB.vdi --size 20480 --variant Standard       # size 20480MiB
+                                                                           --> variant Standard = thin/dynamically allocated  /  variant Fixed = thick allocated
+
+# Add SATA controller and allocate virtual HD to VM
+vboxmanage storagectl <VM_NAME> --name "SATA Controller" --add sata --bootable on
+vboxmanage storageattach <VM_NAME> --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium /home/leo/virtualbox/hd_5GB.vdi
+
+# If need to install OS, create IDE controller and attach ISO file
+vboxmanage storagectl <VM_NAME> --name "IDE Controller" --add ide
+vboxmange storageattach <VM_NAME> --storagectl "IDE Controller" --port 0  --device 0 --type dvddrive --medium /home/leo/virtualbox/<ISOFILE.iso>
+vboxmanage modifyvm <VM_NAME> --boot1 dvd --boot2 disk --boot3 none --boot4 none 
+
+# Remove drive (if asked by OS after installing the system)
+# HINT: it can be done even if system is booted!!
+vboxmanage storageattach <VM_NAME> --storagectl "IDE Controller" --port 0  --device 0 --type dvddrive --medium emptydrive
+
+# Later on can remove the IDE Controller with (VM needs to be shut down)
+vboxmange storagectl <VM_NAME> --name "IDE Controller" --remove
+
+# Enabling connectivity to VMs via remote desktop
+vboxmanage modifyvm <VM_NAME> --vrde on
+vboxmanage modifyvm <VM_NAME> --vrdemulticon on --vrdeport 10001      # change port if already occupied by other VMs (also enable port in firewall ufw!!)
+
+############################################
+# START AND STOP VM
+############################################
+
+# Start the machine in headless mode
+vboxmanage startvm <VM_NAME> --type headless                # alternative "vboxheadless --startvm <VM_NAME>
+
+# Safely shutdown the VM
+vboxmanage controlvm <VM_NAME> acpipowerbutton
+
+# Hard shutdown the VM (like pulling the power plug)
+vboxmanage controlvm <VM_NAME> poweroff
+
+
+##################
+# Start/stop VM automatically on system boot (systemd daemon)
+# https://www.pragmaticlinux.com/2020/10/start-a-virtualbox-vm-on-boot-with-systemd/
+# Define new daemon for VM using template (then starting from the next system reboot/shutdown, systemd will automatically boot/shutdown the machine)
+# Template needs to be located at /etc/systemd/system/vbox_vm_start@.service (a copy is on the above website or in /home/leo/scripts/virtualbox if necessary)
+sudo systemctl enable vbox_vm_start@<VM_NAME>           # Important: VM name must be without spaces
+
+# To disable the functionality simply:
+sudo systemctl disable vbox_vm_start@<VM_NAME> 
+
+##################
+# Delete the VM
+# https://docs.oracle.com/en/virtualization/virtualbox/6.0/user/vboxmanage-registervm.html
+##################
+vboxmanage unregistervm <VM_NAME> -–delete
+vboxmanage list vms                         # confirm removal (Hint: .vdi files are also deleted if -delete flag is used)
+
+
+##################
+# Create VM with an .ova file
+##################
+vboxmanage import <OVA_FILE.ova>            # this will import the VM with all the default parameters
+
+# Change parameters
+vboxmanage import <OVA_FILE.ova> --dry-run
+
+
+
+######
+# References: 
+######
+- https://www.paulligocki.com/create-virtualbox-vm-from-command-line/
+- https://www.andreafortuna.org/2019/10/24/how-to-create-a-virtualbox-vm-from-command-line/
+- https://www.edwardstafford.com/how-to-using-vboxmanage-to-delete-a-virtual-machine-from-virtualbox/

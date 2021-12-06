@@ -25,7 +25,7 @@ while [[ $# -gt 0 ]]; do
     echo "Command reference:"
     echo
     echo "  -h | --help"
-    echo "  --ostype [ubuntu|redhat|linux|debian]"
+    echo "  --ostype [ubuntu|redhat|linux|debian|freebsd]"
     echo "  -c  |  --cpus [1|2|3|4]                       --> default = 2 cores"
     echo "  -m  | --memory [<ram size in MB>]             --> default = 1024MB"
     echo "  --vram [<vram size in MB>]                    --> default = 12MB (for headless VMs is fine)"
@@ -38,7 +38,7 @@ while [[ $# -gt 0 ]]; do
     echo "  -s  |  --systemd                              --> create systemd daemon to start vm on boot"
     echo "  -d  | --dry-run"
     echo
-    echo "Example (20GB HDD): ./create_new_vm.sh -d --ostype ubuntu -c 2 -m 2048 --SATA --virt_HDD 20480 --IDE --isofile './<ISOFILE_FULLPATH.iso>' --vrdeport 1000X -n '<VM_NAME>' --systemd"
+    echo "Example (20GB HDD): ./create_new_vm.sh -d --ostype ubuntu -c 2 -m 2048 --SATA --virt_HDD 20480 --IDE --isofile '/../<ISOFILE_FULLPATH.iso>' --vrdeport 1000X -n '<VM_NAME>' --systemd"
     echo
     exit 1
     ;;
@@ -56,6 +56,9 @@ while [[ $# -gt 0 ]]; do
       elif [[ $2 == "linux" || $2 == "Linux_64" ]]
       then
         OS_TYPE="Linux_64"
+      elif [[ $2 == "freebsd" || $2 == "FreeBSD_64" ]]
+      then
+        OS_TYPE="FreeBSD_64"
       else
         echo "Invalid or not supported OS type"
       fi
@@ -146,7 +149,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 # Parameters check
 if [[ $OS_TYPE == "" ]]
 then
-  echo "ERROR: please provide valid OS Type (--ostype ubuntu, redhat, debian or linux)."
+  echo "ERROR: please provide an OS Type (--ostype ubuntu, redhat, debian, linux or freebsd)."
   echo "HINT: --help is available"
   exit 1
 elif [[ $VM_NAME == "" ]]
@@ -159,9 +162,9 @@ then
   echo "ERROR: incompatible number of cores (${CPUS}). Possible values: 1|2|3|4"
   echo "HINT: --help is available"
   exit 1
-elif [[ $RAM -gt 4096 ]]
+elif [[ $RAM -gt 4096 ]]    # Change it according to available system resources
 then
-  echo "ERROR: too much RAM (more than 4GB not allowed, could change threshold in the script if required..."
+  echo "ERROR: too much RAM (more than 4GB not allowed, could change threshold in the script if required...)"
   exit 1
 fi
 
