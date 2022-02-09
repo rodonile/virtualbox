@@ -1,5 +1,5 @@
 # virtualbox
-Useful script to automate deployment of virtual machines with virtual box on a headless server.
+Script to automate deployment of virtual machines with virtual box on a headless server.
 
 ./create_new_vm.sh --help
 
